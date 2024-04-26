@@ -1,84 +1,37 @@
+import re
 import numpy
 
-int_to_char_map = {
-    0: 'A',
-    1: 'B',
-    2: 'C',
-    3: 'D',
-    4: 'E',
-    5: 'F',
-    6: 'G',
-    7: 'H',
-    8: 'I',
-    9: 'J',
-    10: 'K',
-    11: 'L',
-    12: 'M',
-    13: 'N',
-    14: 'O',
-    15: 'P',
-    16: 'Q',
-    17: 'R',
-    18: 'S',
-    19: 'T',
-    20: 'U',
-    21: 'V',
-    22: 'W',
-    23: 'X',
-    24: 'Y',
-    25: 'Z'
-}
 
+int_to_char_map = {}
+for i in range(256):
+    if (i >= 32 and i <= 126) or (i >= 161):
+        int_to_char_map[i] = chr(i)  
+    else:
+        int_to_char_map[i] = hex(i)
 
-char_to_int_map = {
-    'A': 0,
-    'B': 1,
-    'C': 2,
-    'D': 3,
-    'E': 4,
-    'F': 5,
-    'G': 6,
-    'H': 7,
-    'I': 8,
-    'J': 9,
-    'K': 10,
-    'L': 11,
-    'M': 12,
-    'N': 13,
-    'O': 14,
-    'P': 15,
-    'Q': 16,
-    'R': 17,
-    'S': 18,
-    'T': 19,
-    'U': 20,
-    'V': 21,
-    'W': 22,
-    'X': 23,
-    'Y': 24,
-    'Z': 25
-}
+int_to_char_map[39] = 'single_quotes'
 
-def split_into_list(string, size):
-    return [string[i:i+size] for i in range(0, len(string), size)]
+char_to_int_map = {b: a for (a, b) in int_to_char_map.items()}
+def split_into_list_of_fours(string):
+    return [string[i:i+4] for i in range(0, len(string), 4)]
 
-def reassemble_into_list(sequence, size):
-    if len(sequence) % size != 0:
+def reassemble_into_list_of_twos(sequence):
+    if len(sequence) % 2 != 0:
         while True:
             sequence.append(25)
-            if len(sequence) % size == 0:
+            if len(sequence) % 2 == 0:
                 break
-    return [list(sequence[i:i+size]) for i in range(0, len(sequence), size)]
+    return [list(sequence[i:i+2]) for i in range(0, len(sequence), 2)]
 
-def inverse_mod_26(integer):
-    integer = integer % 26
+def inverse_mod_256(integer):
+    integer = integer % 256
     current = 1
     while True:
-        if integer*current % 26 == 1:
+        if (integer*current) % 256 == 1:
             return current
         else:
             current += 1
-            if current == 26:
+            if current == 256:
                 raise ValueError('Matrix is not invertible')
             
 def comatrix(matrix):
@@ -91,5 +44,18 @@ def comatrix(matrix):
     
     return comatrix
 
-def consecutive_combinations(lst, n):
-    return [lst[i:i+n] for i in range(len(lst) - n + 1)]
+def matrix_inverse_mod_256(matrix):
+    matrix_array = numpy.array(matrix).reshape(2, 2)
+    det = round(numpy.linalg.det(matrix_array))
+    
+    return inverse_mod_256(det) * comatrix(matrix)
+
+def consecutive_combinations(lst):
+    if len(lst) <= 4:
+        return lst
+    output = []
+    
+    for i in range(0, len(lst), 4):
+        output.append(lst[i:i+4])
+        
+    return output
